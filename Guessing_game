@@ -1,0 +1,92 @@
+extern crate rand;
+// lets Rust know we'll be using that external dependency
+// also does equivalent of calling use rand
+
+use std::io;
+// io = input/output library
+// io comes from standard 'std' library
+
+use std::cmp::Ordering;
+// Ordering is like Result but instead of Ok and Err it has Less, Greater, and Equal
+use rand::Rng;
+// Rng is a trait that defines methods that random number generators implement
+// more on traits later
+
+fn main() {
+// fn declares new function
+// () indicates no parameters
+// { starts the body of the function
+
+    println!("Guess the number!");
+// println! is a macro that prints a string to the screen
+    
+    let secret_number = rand::thread_rng().gen_range (1,101);
+// gen_range method is inclusive on lower bound but exclusive on upper
+
+    // println!("The secret number is: {}", secret_number);
+  
+    loop {  
+        println!("Please input your guess.");
+        
+        let mut guess = String::new();
+// let is used to create variables
+// e.g. let foo = bar
+// variables immutable by default in rust
+// mut allows them to be mutable
+// let mut guess: mutable variable 'guess'
+// String::new is a function that returns a new instance of a String
+// String is a string type provided by std that is a growable, UTF-8 encoded bit of text
+// :: indicates new is an associated function of the String type
+// this associates new with the String type, not a specific instance: "static method"
+// new creates new, empty String
+// we have created a mutable variable currently bound to a new, empty instance of a String
+   
+        io::stdin().read_line(&mut guess)
+// if no "use std::io:" at start, can be "std::io::stdin"
+// stdin returns this instance
+// this is a type that represents a handle to the standard input for your terminal
+// then, read_line method is called to get user input
+// also, passing &mut guess argument to read_line
+// read_line takes user input and makes it a string for argument
+// needs to be mutable so the method can change a string's content by adding user input
+// & indicates argument is a reference (more later)
+// references are immutable by default, hence &mut guess rather than &guess
+.expect("Failed to read line");
+// read_line, in addition to taking user input and making it a string, returns io:Result
+// Result types are enumerations - types that can have fixed sets of values aka variants
+// for Result, variants are Ok or Err
+// Ok indicates successful operation, and inside is the value
+// Err indicates failed operation, and tells us why or how it failed
+// Result types encode error handling information
+// io::Result has an expect method that we can call
+// if io::Result is Err, expect will crash program and display message
+// if read_line method is Err, OS problem likely
+// if io::Result is Ok, expect will take and show just the return value for use
+
+        let guess: u32 = match guess.trim().parse() {
+          //  .expect("Please type a number!"); - doesn't handle error but causes crash
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+        
+        println!("You guessed : {}", guess);
+// prints string we saved user input to
+// {} set is a placeholder
+// we can use multiple placeholders e.g.
+// let x = 5;
+// let y = 10;
+// println!("x = {} and y = {}", x, y,);
+// would print x = 5 and y = 10
+
+        match guess.cmp(&secret_number) {
+            Ordering::Less => println!("Too small!"),
+            Ordering::Greater => println!("Too big!"),
+            Ordering::Equal => {
+                println!("You win!");
+                break;
+            }
+    // all these are 'arms' of the match expression
+        }
+// cmp compares 2 values
+    }
+}
